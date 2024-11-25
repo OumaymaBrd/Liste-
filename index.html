@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulaire Dynamique</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        select, input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23333' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Formulaire Dynamique</h1>
+        
+        <!-- Première sélection : Trame principale -->
+        <div class="form-group">
+            <label for="mainTrameSelect">Trame principale :</label>
+            <select id="mainTrameSelect">
+                <option value="">-- Choisissez une Trame --</option>
+                <option value="n2">Trame transfert vers N2</option>
+                <option value="sollicitation">Trame transfert vers Sollicitation passerelle</option>
+                <option value="activation">Trame transfert vers Activation Passerelle</option>
+                <option value="commercial">TODO commercial</option>
+                <option value="resiliation">TODO résiliation</option>
+                <option value="support">AG Sale support</option>
+            </select>
+        </div>
+
+        <!-- Deuxième sélection : Type de requête (pour N2 uniquement) -->
+        <div id="requestTypeContainer" class="form-group hidden">
+            <label for="requestTypeSelect">Type de Requête :</label>
+            <select id="requestTypeSelect">
+                <option value="">-- Choisissez le type de requête --</option>
+                <option value="n2_annonce">Requête N2 Annonce</option>
+                <option value="dysfunction">Requête dysfonctionnement</option>
+            </select>
+        </div>
+
+        <!-- Conteneur pour les options -->
+        <div id="optionsContainer" class="form-group hidden">
+            <label for="optionsSelect">Options :</label>
+            <select id="optionsSelect"></select>
+        </div>
+
+        <!-- Champ dynamique -->
+        <div id="dynamicField"></div>
+    </div>
+
+    <script>
+        const formData = {
+            n2_annonce: [
+                { label: "Contrat en veille ou pas", type: "select", options: ["Oui", "Non"] },
+                { label: "Possibilité de faire la modification directement", type: "select", options: ["Oui", "Non"] },
+                { label: "Le nom du contact", type: "text" },
+                { label: "Référence Annonce", type: "text" },
+                { label: "Commentaire et explications", type: "text" },
+                { label: "Typologie du dysfonctionnement", type: "text" },
+                { label: "Nom et prénom contact", type: "text" },
+                { label: "Numéro de tel contact", type: "text" },
+                { label: "Mail contact", type: "email" },
+                { label: "RC contact", type: "text" },
+                { label: "Date dysfonctionnement", type: "date" },
+                { label: "Message d'erreur/réf annonce", type: "text" }
+            ],
+            dysfunction: [
+                { label: "Essayer sur Google Chrome", type: "select", options: ["Oui", "Non"] },
+                { label: "Vider le cache", type: "select", options: ["Oui", "Non"] },
+                { label: "Indiquer les manipulations sur la requête", type: "select", options: ["Oui", "Non"] },
+                { label: "Indiquer le mail au client au besoin", type: "email" },
+                { label: "Envoyer un mail test", type: "select", options: ["Oui", "Non"] },
+                { label: "Mail reçu", type: "select", options: ["Oui", "Non"] },
+                { label: "Demande capture écran", type: "select", options: ["Oui", "Non"] },
+                { label: "Lister les manipulations faites par le client", type: "text" },
+                { label: "Le nom du contact", type: "text" },
+                { label: "Référence Annonce", type: "text" },
+                { label: "Commentaire et explications", type: "text" },
+                { label: "Typologie du dysfonctionnement", type: "text" },
+                { label: "Nom et prénom contact", type: "text" },
+                { label: "Numéro de tel contact", type: "text" },
+                { label: "Mail contact", type: "email" },
+                { label: "RC contact", type: "text" },
+                { label: "Date dysfonctionnement", type: "date" },
+                { label: "Message d'erreur/réf annonce", type: "text" }
+            ],
+            activation: [
+                { label: "Priorité : 'critical' (si client virulent)", type: "select", options: ["Haute", "Moyenne", "Faible"] },
+                { label: "Nom et prénom contact", type: "text" },
+                { label: "Numéro de tel contact", type: "text" },
+                { label: "Mail contact", type: "text" },
+                { label: "RC contact", type: "text" },
+                { label: "Nom du logiciel déjà en place:", type: "text" },
+                { label: "Nom du logiciel Souhaité :", type: "text" },
+                { label: "Date de mise en place (pas de transfert si moins de 10 jours)", type: "date" }
+            ],
+            commercial: [
+                { label: "Priorité : 'critical' (si client virulent)", type: "select", options: ["Haute", "Moyenne", "Faible"] },
+                { label: "Nom et prénom contact", type: "text" },
+                { label: "Numéro de tel contact", type: "text" },
+                { label: "Mail contact", type: "text" },
+                { label: "RC contact", type: "text" },
+                { label: "Compte Actif", type: "select", options: ["Oui", "Non"] },
+                { label: "Mise en veille", type: "select", options: ["Oui", "Non"] },
+                { label: "Marché", type: "text" },
+                { label: "Commercial Absent", type: "select", options: ["Oui", "Non"] },
+                { label: "Client donne les raisons", type: "select", options: ["Oui", "Non"] },
+                { label: "Si raison communiquée", type: "text" },
+                { label: "Nom du commecial UPSELL", type: "text" }
+            ],
+            resiliation: [
+                { label: "Priorité : 'critical' (si client virulent)", type: "select", options: ["Haute", "Moyenne", "Faible"] },
+                { label: "Nom et prénom contact", type: "text" },
+                { label: "Numéro de tel contact", type: "text" },
+                { label: "Mail contact", type: "text" },
+                { label: "RC contact", type: "text" },
+                { label: "Compte Actif", type: "select", options: ["Oui", "Non"] },
+                { label: "Mise en veille", type: "select", options: ["Oui", "Non"] },
+                { label: "Marché", type: "text" },
+                { label: "Commercial Absent", type: "select", options: ["Oui", "Non"] },
+                { label: "Client donne les raisons", type: "select", options: ["Oui", "Non"] },
+                { label: "Si raison communiquée", type: "text" },
+                { label: "Nom du commecial UPSELL", type: "text" },
+                { label: "Acte de gestion/TODO", type: "select", options: ["Oui", "Non"] },
+                { label: "Si oui Proprio TODO", type: "text" }
+            ],
+            support: [
+                { label: "Priorité : 'critical' (si client virulent)", type: "select", options: ["Haute", "Moyenne", "Faible"] },
+                { label: "Nom et prénom contact", type: "text" },
+                { label: "Numéro de tel contact", type: "text" },
+                { label: "Mail contact", type: "text" },
+                { label: "RC contact", type: "text" },
+                { label: "Compte Actif", type: "select", options: ["Oui", "Non"] },
+                { label: "Mise en veille", type: "select", options: ["Oui", "Non"] },
+                { label: "Marché", type: "text" },
+                { label: "Info communiquées suite accès facture", type: "text" },
+                { label: "Date de prélèvement", type: "text" },
+                { label: "Ref Facture ou date", type: "text" },
+                { label: "Modification info", type: "select", options: ["Oui", "Non"] },
+                { label: "Si oui partager les info", type: "text" },
+                { label: "KBIS", type: "text" },
+                { label: "Contrat ULTIMO", type: "select", options: ["Oui", "Non"] },
+                { label: "Si oui Requête MA créée", type: "select", options: ["Oui", "Non"] }
+            ]
+        };
+
+        const mainTrameSelect = document.getElementById('mainTrameSelect');
+        const requestTypeContainer = document.getElementById('requestTypeContainer');
+        const requestTypeSelect = document.getElementById('requestTypeSelect');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const optionsSelect = document.getElementById('optionsSelect');
+        const dynamicField = document.getElementById('dynamicField');
+
+        // Gestion du changement de la trame principale
+        mainTrameSelect.addEventListener('change', function() {
+            const selectedTrame = this.value;
+            
+            // Réinitialiser tous les conteneurs
+            requestTypeContainer.classList.add('hidden');
+            optionsContainer.classList.add('hidden');
+            dynamicField.innerHTML = '';
+            
+            if (selectedTrame === 'n2') {
+                // Afficher le sélecteur de type de requête pour N2
+                requestTypeContainer.classList.remove('hidden');
+                requestTypeSelect.value = '';
+            } else if (formData[selectedTrame]) {
+                // Afficher directement les options pour les autres trames
+                showOptions(selectedTrame);
+            }
+        });
+
+        // Gestion du changement du type de requête
+        requestTypeSelect.addEventListener('change', function() {
+            const selectedType = this.value;
+            if (selectedType) {
+                showOptions(selectedType);
+            } else {
+                optionsContainer.classList.add('hidden');
+                dynamicField.innerHTML = '';
+            }
+        });
+
+        // Gestion du changement d'option
+        optionsSelect.addEventListener('change', function() {
+            const selectedOption = this.value;
+            const selectedType = requestTypeSelect.value || mainTrameSelect.value;
+            
+            dynamicField.innerHTML = '';
+
+            if (formData[selectedType] && formData[selectedType][selectedOption]) {
+                const field = formData[selectedType][selectedOption];
+                createField(field);
+            }
+        });
+
+        // Fonction pour afficher les options
+        function showOptions(type) {
+            if (formData[type]) {
+                optionsContainer.classList.remove('hidden');
+                optionsSelect.innerHTML = '<option value="">-- Choisissez une Option --</option>';
+                
+                formData[type].forEach((field, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = field.label;
+                    optionsSelect.appendChild(option);
+                });
+            }
+        }
+
+        // Fonction pour créer un champ
+        function createField(field) {
+            const fieldContainer = document.createElement('div');
+            fieldContainer.className = 'form-group';
+
+            const label = document.createElement('label');
+            label.textContent = field.label;
+            fieldContainer.appendChild(label);
+
+            if (field.type === 'select' && field.options) {
+                const select = document.createElement('select');
+                field.options.forEach(option => {
+                    const optionElement = document.createElement('option');
+                    optionElement.value = option.toLowerCase();
+                    optionElement.textContent = option;
+                    select.appendChild(optionElement);
+                });
+                fieldContainer.appendChild(select);
+            } else {
+                const input = document.createElement('input');
+                input.type = field.type;
+                input.placeholder = `Entrez ${field.label.toLowerCase()}`;
+                fieldContainer.appendChild(input);
+            }
+
+            dynamicField.appendChild(fieldContainer);
+        }
+    </script>
+</body>
+</html>
