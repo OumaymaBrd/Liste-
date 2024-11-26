@@ -43,6 +43,21 @@
         .hidden {
             display: none;
         }
+        #copyButton {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        #copyButton:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 <body>
@@ -75,6 +90,9 @@
 
         <!-- Conteneur des champs dynamiques -->
         <div id="dynamicFieldContainer"></div>
+
+        <!-- Bouton pour copier les données -->
+        <button id="copyButton" class="hidden">Copier toutes les données</button>
     </div>
 
     <script>
@@ -198,11 +216,13 @@
         const requestTypeContainer = document.getElementById('requestTypeContainer');
         const requestTypeSelect = document.getElementById('requestTypeSelect');
         const dynamicFieldContainer = document.getElementById('dynamicFieldContainer');
+        const copyButton = document.getElementById('copyButton');
 
         // Gestion du changement de la trame principale
         mainTrameSelect.addEventListener('change', function () {
             const selectedTrame = this.value;
             dynamicFieldContainer.innerHTML = ''; // Réinitialisation du formulaire
+            copyButton.classList.add('hidden'); // Cacher le bouton de copie
 
             if (selectedTrame === 'n2') {
                 // Afficher le conteneur des sous-options pour N2
@@ -211,6 +231,7 @@
                 requestTypeContainer.classList.add('hidden');
                 if (formData[selectedTrame]) {
                     displayFields(formData[selectedTrame]);
+                    copyButton.classList.remove('hidden'); // Afficher le bouton de copie
                 }
             }
         });
@@ -222,6 +243,7 @@
 
             if (formData[selectedOption]) {
                 displayFields(formData[selectedOption]);
+                copyButton.classList.remove('hidden'); // Afficher le bouton de copie
             }
         });
 
@@ -249,6 +271,32 @@
                 dynamicFieldContainer.appendChild(fieldGroup);
             });
         }
+
+        // Fonction pour copier les données
+        function copyFormData() {
+            let formContent = `Trame principale: ${mainTrameSelect.value}\n`;
+            if (mainTrameSelect.value === 'n2') {
+                formContent += `Type de requête: ${requestTypeSelect.value}\n`;
+            }
+
+            const inputs = dynamicFieldContainer.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                const label = input.parentElement.querySelector('label').textContent;
+                formContent +=
+`${label}: ${input.value}\n`;
+            });
+
+            // Copier dans le presse-papiers
+            navigator.clipboard.writeText(formContent).then(() => {
+                alert('Les données ont été copiées dans le presse-papiers !');
+            }).catch(err => {
+                console.error('Erreur lors de la copie : ', err);
+            });
+        }
+
+        // Ajouter l'événement de clic au bouton de copie
+        copyButton.addEventListener('click', copyFormData);
     </script>
 </body>
 </html>
+
